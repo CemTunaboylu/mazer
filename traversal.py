@@ -63,7 +63,7 @@ def djikstra(
     )
     is_playable = lambda p: get_value(maze, p) == walkable_maze_value
 
-    # do not count the walls
+    # do not count the walls, implies walls are not breakable
     # TODO: if there are less than shortest manhattan distance or whatever the distance calc. method is
     # given, we can stop immediately without traversing the maze
     num_of_walkable_nodes = num_walkable_nodes(maze)
