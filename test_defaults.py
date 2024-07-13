@@ -1,7 +1,7 @@
 from typing import List, Set
 from unittest import TestCase, main
 
-from defaults import default_neighbor_shifts_for
+from maze import Maze
 
 
 def to_set(l: List[List]) -> Set:
@@ -27,7 +27,7 @@ class TestDefaults(TestCase):
         #         (1, -1),
         #     },
         # )
-        only_orthogonal_movement = to_set(default_neighbor_shifts_for(2, False))
+        only_orthogonal_movement = to_set(Maze.default_neighbor_shifts_for(2, False))
         self.assertEqual(
             only_orthogonal_movement,
             {
@@ -38,7 +38,7 @@ class TestDefaults(TestCase):
             },
         )
 
-        only_orthogonal_movement = to_set(default_neighbor_shifts_for(3, False))
+        only_orthogonal_movement = to_set(Maze.default_neighbor_shifts_for(3, False))
         self.assertEqual(
             only_orthogonal_movement,
             {
