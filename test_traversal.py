@@ -1,11 +1,11 @@
 from typing import List
 from unittest import TestCase, main
 
-from colors import bcolors, color_text
-from dtypes import Position
-from defaults import DefaultMazeValue, add, show_path
-from test_helpers import debug_mode, ignore
-from traversal import djikstra, num_walkable_nodes
+from colors import bcolors
+from dtypes import add
+from defaults import DefaultMaze, DefaultMazeValue, color_path
+from test_helpers import ignore, debug
+from traversal import djikstra
 
 
 def create_tensor_with(
@@ -28,7 +28,20 @@ def create_tensor_with_playable_columns(dims: List[int], cols: List[int]):
 
 
 class TestTraversal(TestCase):
-    @ignore
+    debug_mode = False
+    debug_logs = []
+
+    def __debug(self):
+        if self.debug_mode:
+            for log in self.debug_logs:
+                print(log)
+            print("-" * 100)
+
+        self.debug_logs.clear()
+
+    def log(self, *args, **kwargs):
+        self.debug_logs.append(*args, **kwargs)
+
     def test_create_tensor_with(self):
         test_cases = [
             ([1, 1], [DefaultMazeValue.WALL]),
@@ -40,27 +53,30 @@ class TestTraversal(TestCase):
             ([3, 3, 4], [DefaultMazeValue.WALL, DefaultMazeValue.get_playable()]),
         ]
 
-        if debug_mode:
-            from pprint import pprint
-
         for dims, values in test_cases:
             t = create_tensor_with(dims, values)
 
             L = len(dims) - 1
             for i, d in enumerate(dims):
-                if debug_mode and len(t) != d:
-                    print(f"{dims}")
-                    pprint(t)
-                    print(f"d:{d}")
-                self.assertEqual(len(t), d)
+                try:
+                    self.log(f"{dims}")
+                    self.log(t)
+                    self.log(f"d:{d}")
+
+                    self.assertEqual(len(t), d)
+                except AssertionError as e:
+                    print(e)
+                self.__debug()
                 if i < L:
                     t = t[0]
                     continue
                 l = (L + 1) // len(values) + 1
                 exp_vals = values * l
-                self.assertEqual(t, exp_vals[: len(t)])
+                try:
+                    self.assertEqual(t, exp_vals[: len(t)])
+                except AssertionError as e:
+                    print(e)
 
-    @ignore
     def test_num_walkable_nodes(self):
         test_cases = [
             ([1, 1], [DefaultMazeValue.WALL], 0),
@@ -77,14 +93,17 @@ class TestTraversal(TestCase):
         ]
 
         for dims, values, exp_walkable in test_cases:
-            maze = create_tensor_with(dims, values)
-            walkable = num_walkable_nodes(maze, DefaultMazeValue.get_playable())
-            if debug_mode and exp_walkable != walkable:
-                from pprint import pprint
-
-                pprint(maze)
-                print(f"walkable: {walkable}")
-            self.assertEqual(exp_walkable, walkable)
+            space = create_tensor_with(dims, values)
+            maze = DefaultMaze(space)
+            walkable = maze.num_walkable_nodes()
+            try:
+                self.log(f"dims:{dims}, values:{values}")
+                self.log(space)
+                self.log(f"walkable: {walkable}, exp: {exp_walkable}")
+                self.assertEqual(exp_walkable, walkable)
+            except AssertionError as e:
+                print(e)
+            self.__debug()
 
     def test_djikstra(self):
         test_cases = [
@@ -100,37 +119,36 @@ class TestTraversal(TestCase):
 
         start, end = (0, 0), (2, 2)
 
-        for maze, path in test_cases:
-            if debug_mode:
-                print("maze:")
-                [print(m) for m in maze]
-            path = djikstra(maze, start, end, debug_mode=debug_mode)
-            self.assertEqual(path, None)
+        for space, path in test_cases:
+            self.log(space)
+            maze = DefaultMaze(space)
+            path = djikstra(maze, start, end)
+            try:
+                self.assertEqual(path, None)
+            except AssertionError as e:
+                print(e)
+                djikstra(maze, start, end, debug_mode=self.debug_mode)
+            self.__debug()
 
         dims = [4, 4]
         t = create_tensor_with_playable_columns(dims, [0, 3])
         start, end = (0, 0), add(dims, (-1, -1))
-        for r in range(len(t)):
+        for r in range(len(space)):
             copy = t[:]
+            maze = DefaultMaze(copy)
             copy[r] = [DefaultMazeValue.get_playable()] * len(t[0])
 
-            path = djikstra(copy, start, end, debug_mode=debug_mode)
-            if debug_mode:
-                print("maze:")
-                show_path(copy, path)
-            self.assertEqual(len(path), len(copy) + len(copy[0]) - 1)
+            path = djikstra(maze, start, end)
+            self.log(color_path(maze, path, color=bcolors.FAIL))
+            try:
+                self.assertEqual(len(path), len(copy) + len(copy[0]) - 1)
+            except AssertionError as e:
+                print(e)
+                path = djikstra(
+                    maze, start, end, debug_mode=self.debug_mode
+                )  # do it again with logs
+            self.__debug()
 
 
 if __name__ == "__main__":
-    from sys import argv
-
-    old_debug_mode = debug_mode
-
-    if len(argv) > 1:
-        debug_mode = argv[-1].lower() in ["debug", "1"]
-        del argv[:-1]
-    else:
-        debug_mode = False
     main()
-
-    debug_mode = old_debug_mode

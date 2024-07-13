@@ -1,10 +1,14 @@
-debug_mode = True
+debug_mode = False
 
 
 def ignore(f):
     return lambda n: None
 
 
-def toggle_debug(t_obj):
-    debug_mode = not debug_mode
-    return t_obj
+def debug(t_func):
+    def f(self):
+        self.debug_mode = not self.debug_mode
+        t_func(self)
+        self.debug_mode = not self.debug_mode
+
+    return f
