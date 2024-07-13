@@ -14,6 +14,6 @@ def color_text(text: str, color: str = bcolors.OKGREEN, bold: bool = False) -> s
     return f"{bcolors.BOLD if bold else ''}{color}{text}{bcolors.ENDC}"
 
 
-def color_values_of(iterable, val_to_color):
-    clr = lambda v: color_text(str(v), bold=True) if v == val_to_color else str(v)
+def color_values_of(iterable, val_to_color, color=bcolors.OKGREEN, bold=True):
+    clr = lambda v: color_text(str(v), color, bold) if v == val_to_color else str(v)
     return " ".join([clr(i) for i in iterable])
