@@ -5,7 +5,7 @@ from operator import eq as eq_op
 from typing import Callable, NewType, Tuple, Union
 
 Number = Union[float, int]
-Position = NewType("Position", Tuple[Number, ...])
+Position = NewType("Position", Tuple[int, ...])
 
 
 # Order can matter for the pos and other
