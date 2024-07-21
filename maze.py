@@ -22,6 +22,10 @@ class MazeValue(ABC):
     def get_playable():
         pass
 
+    @staticmethod
+    def get_unplayable():
+        pass
+
 
 # TODO: Add pre-processors to maze such as how many obstacles there are etc
 required_attributes_for_maze = ["space", "playable", "dims"]

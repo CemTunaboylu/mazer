@@ -18,6 +18,10 @@ class DefaultMazeValue(Enum):
     def get_playable():
         return DefaultMazeValue.PATH
 
+    @staticmethod
+    def get_unplayable():
+        return DefaultMazeValue.WALL
+
     def __str__(self):
         return str(self.value)
 
