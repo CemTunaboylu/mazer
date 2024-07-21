@@ -126,7 +126,8 @@ class Maze(ABC):
     # TODO: assumes that curr and prev positions only differ in 1 dimension
     # and connects the path between them
     # TODO: make this more generic to n-dimensional path connect with a vector
-    def set_path(curr, prev, maze):
+    def set_path(self, curr, prev):
+        maze = self.space
         diff_axis = [i for i, (dc, dp) in enumerate(zip(curr, prev)) if dc != dp]
         if not diff_axis:
             return
@@ -136,7 +137,7 @@ class Maze(ABC):
 
         for r in range(indices[1] - indices[0] + 1):
             coors = prev[:diff_axis] + [indices[0] + r] + prev[diff_axis + 1 :]
-            maze.set_value(coors, 1)
+            self.set_value(coors, 1)
 
     @staticmethod
     def create_no_path_space(
