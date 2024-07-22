@@ -1,6 +1,8 @@
 from typing import List
-from unittest import TestCase, main
+from unittest import main
+from unittest.mock import Base
 
+from base_test import BaseTest
 from colors import bcolors
 from dtypes import add
 from defaults import DefaultMaze, DefaultMazeValue, color_path
@@ -27,20 +29,9 @@ def create_tensor_with_playable_columns(dims: List[int], cols: List[int]):
     return [create_tensor_with_playable_columns(dims[1:], cols) for _ in range(dims[0])]
 
 
-class TestTraversal(TestCase):
-    debug_mode = False
-    debug_logs = []
-
-    def __debug(self):
-        if self.debug_mode:
-            for log in self.debug_logs:
-                print(log)
-            print("-" * 100)
-
-        self.debug_logs.clear()
-
-    def log(self, *args, **kwargs):
-        self.debug_logs.append(*args, **kwargs)
+class TestTraversal(BaseTest):
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
 
     def test_create_tensor_with(self):
         test_cases = [
@@ -58,26 +49,17 @@ class TestTraversal(TestCase):
 
             L = len(dims) - 1
             for i, d in enumerate(dims):
-                try:
-                    self.log(f"{dims}")
-                    self.log(t)
-                    self.log(f"d:{d}")
+                self.log(f"{dims}")
+                self.log(t)
+                self.log(f"d:{d}")
 
-                    self.assertEqual(len(t), d)
-                except AssertionError as e:
-                    print(e)
-                    self.fail()
-                self.__debug()
+                self.logged_assert(self, self.assertEqual, (len(t), d))
                 if i < L:
                     t = t[0]
                     continue
                 l = (L + 1) // len(values) + 1
                 exp_vals = values * l
-                try:
-                    self.assertEqual(t, exp_vals[: len(t)])
-                except AssertionError as e:
-                    print(e)
-                    self.fail()
+                self.logged_assert(self, self.assertEqual, (t, exp_vals[: len(t)]))
 
     def test_num_walkable_nodes(self):
         test_cases = [
@@ -98,15 +80,10 @@ class TestTraversal(TestCase):
             space = create_tensor_with(dims, values)
             maze = DefaultMaze(space)
             walkable = maze.num_walkable_nodes()
-            try:
-                self.log(f"dims:{dims}, values:{values}")
-                self.log(space)
-                self.log(f"walkable: {walkable}, exp: {exp_walkable}")
-                self.assertEqual(exp_walkable, walkable)
-            except AssertionError as e:
-                print(e)
-                self.fail()
-            self.__debug()
+            self.log(f"dims:{dims}, values:{values}")
+            self.log(space)
+            self.log(f"walkable: {walkable}, exp: {exp_walkable}")
+            self.logged_assert(self, self.assertEqual, (exp_walkable, walkable))
 
     def test_djikstra(self):
         test_cases = [
@@ -135,12 +112,7 @@ class TestTraversal(TestCase):
             self.log(space)
             maze = DefaultMaze(space)
             path = djikstra(maze, start, end)
-            try:
-                self.assertEqual(path, None)
-            except AssertionError as e:
-                print(e)
-                djikstra(maze, start, end, debug_mode=self.debug_mode)
-            self.__debug()
+            self.logged_assert(self, self.assertIsNone, (path,))
 
         dims = [4, 4]
         t = create_tensor_with_playable_columns(dims, [0, 3])
@@ -151,15 +123,11 @@ class TestTraversal(TestCase):
             copy[r] = [DefaultMazeValue.get_playable()[0]] * len(t[0])
 
             path = djikstra(maze, start, end)
+            self.logged_assert(self, self.assertIsNotNone, (path,))
             self.log(color_path(maze, path, color=bcolors.FAIL))
-            try:
-                self.assertEqual(len(path), len(copy) + len(copy[0]) - 1)
-            except (AssertionError, TypeError) as e:
-                print(e)
-                path = djikstra(
-                    maze, start, end, debug_mode=self.debug_mode
-                )  # do it again with logs
-            self.__debug()
+            self.logged_assert(
+                self, self.assertEqual, (len(path), len(copy) + len(copy[0]) - 1)
+            )
 
 
 if __name__ == "__main__":

@@ -1,5 +1,6 @@
-from unittest import TestCase, main
+from unittest import main
 
+from base_test import BaseTest
 from defaults import DefaultMaze, DefaultMazeValue, color_path
 from dtypes import Position
 from eller import (
@@ -14,7 +15,10 @@ from test_helpers import ignore
 from union_find import DisjointSet
 
 
-class TestEller(TestCase):
+class TestEller(BaseTest):
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+
     def test_convert_to_row(self):
         p = [0, 0, 0, 3, 3, 5, 5, 5]
         r = [3, 1, 1, 2, 1, 3, 1, 1]
@@ -37,10 +41,9 @@ class TestEller(TestCase):
 
     def test_eller_is_fully_connected(self):
         test_cases = [(3, 7), (15, 15)]
-        debug = True
         for dims in test_cases:
             rows = ellers_algorithm(dims)
-            pretty_print(rows)
+            self.log(pretty_print(rows))
             row_values_to_maze_values(rows)
 
             maze = DefaultMaze(rows)
@@ -57,7 +60,7 @@ class TestEller(TestCase):
                 Position((0, start_row)),
                 Position(target),
             )
-            if debug:
+            if self.debug_mode:
                 dmz = DefaultMazeValue
                 replacements = {" ": dmz.FILLER.value, "_": underline(dmz.FILLER.value)}
 
@@ -69,15 +72,9 @@ class TestEller(TestCase):
 
                 for i, r in enumerate(rows):
                     rows[i] = [replace(dmv) for dmv in r]
-
-            try:
-                self.assertTrue(len(path) > 0)
-                print()
-                print(f"{'_' * len(maze.space[0])}")
-                print(color_path(maze, path))
-            except Exception as e:
-                print(e)
-                self.fail()
+                    self.log(f"{'_' * len(maze.space[0])}")
+                    self.log(color_path(maze, path))
+            self.logged_assert(self, self.assertTrue, (len(path) > 0,))
 
 
 def row_values_to_maze_values(rows):

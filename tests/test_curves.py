@@ -1,18 +1,22 @@
-from unittest import TestCase, main
+from unittest import main
 
+from base_test import BaseTest
 from curves import hindex_to_2d
 from test_helpers import ignore
 
 
-class TestCurves(TestCase):
+class TestCurves(BaseTest):
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+
     def test_hindex_to_2d_n_equals_2(self):
         exps = [(0, 0), (0, 1), (1, 1), (1, 0)]
         N = 2
         for i, e in enumerate(exps):
             h_res = hindex_to_2d(i, N)
-            if h_res != e:
-                print(f"point:{i}, h_res:{h_res}, exp:{e}, N:{N}")
-            self.assertEqual(hindex_to_2d(i, N), e)
+            self.assertEqual(
+                hindex_to_2d(i, N), e, f"point:{i}, h_res:{h_res}, exp:{e}, N:{N}"
+            )
 
     def test_hindex_to_2d_n_equals_4(self):
         N = 4

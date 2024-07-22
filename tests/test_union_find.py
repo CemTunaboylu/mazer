@@ -1,10 +1,13 @@
 from unittest import TestCase, main
 
+from base_test import BaseTest
 from union_find import DisjointSet
 
 
-class TestDisjointSet(TestCase):
-    # TODO test compression
+class TestDisjointSet(BaseTest):
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+
     def test_find_no_compression(self):
         test_cases = [
             # parents

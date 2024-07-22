@@ -1,6 +1,7 @@
 from typing import List, Set
-from unittest import TestCase, main
+from unittest import main
 
+from base_test import BaseTest
 from defaults import DefaultMazeValue
 from maze import Maze
 
@@ -12,7 +13,10 @@ def to_set(l: List[List]) -> Set:
     return s
 
 
-class TestDefaults(TestCase):
+class TestDefaults(BaseTest):
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+
     def test_default_neighbor_shifts_for(self):
         # including_diagonal_movement = to_set(default_neighbor_shifts_for(2, True))
         # self.assertEqual(
