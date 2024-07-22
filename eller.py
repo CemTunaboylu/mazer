@@ -153,11 +153,13 @@ def convert_to_row(dset: DisjointSet, verticals: Set[int], debug=False):
     return "".join(row)
 
 
-def pretty_print(rows, print_col_witdth: bool = False):
-    print()
+def pretty_print(rows, print_col_witdth: bool = False) -> str:
+    to_print = ["\n"]
     L = len(rows[0])
-    print("".join(["_"] * L))
+    to_print.append("".join(["_"] * L))
     if print_col_witdth:
-        [print(r, len(r)) for r in rows]
+        to_print.extend([str((r, len(r))) for r in rows])
     else:
-        [print(r) for r in rows]
+
+        to_print.extend([str(r) for r in rows])
+    return "".join(to_print)
