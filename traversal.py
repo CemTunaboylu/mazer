@@ -49,7 +49,9 @@ def djikstra(
             break
         for n in maze.default_neighbor_shifts_for(len(maze.dims)):
             neighbor_cell = add(current, n)
-            if not maze.is_in(neighbor_cell) or not maze.is_playable(neighbor_cell):
+            if not maze.is_in(neighbor_cell) or not maze.can_play_from(
+                current, neighbor_cell, n
+            ):
                 continue
             n_cost = cost + 1
             known_distance = distances[neighbor_cell][0]
@@ -89,7 +91,3 @@ def reconstruct_path_between(
     path.append(start)
     path.reverse()
     return path
-
-
-if __name__ == "__main__":
-    djikstra(None, None, None)

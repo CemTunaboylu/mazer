@@ -18,6 +18,10 @@ class MazeValue(ABC):
     def is_playable(self) -> bool:
         pass
 
+    @abstractmethod
+    def can_play_to(self, other: "MazeValue", dir: Position) -> bool:
+        pass
+
     @staticmethod
     def get_playable():
         pass
@@ -28,7 +32,7 @@ class MazeValue(ABC):
 
 
 # TODO: Add pre-processors to maze such as how many obstacles there are etc
-required_attributes_for_maze = ["space", "playable", "dims"]
+required_attributes_for_maze = ["space", "playable", "dims", "num_nodes"]
 
 
 # TODO: implement an iterator
@@ -45,21 +49,6 @@ class Maze(ABC):
     @abstractmethod
     def __repr__(self) -> str:
         pass
-
-    # @property
-    # @abstractmethod
-    # def space(self):
-    #     raise NotImplementedError
-
-    # @property
-    # @abstractmethod
-    # def playable(self):
-    #     raise NotImplementedError
-
-    # @property
-    # @abstractmethod
-    # def dims(self) -> List[int]:
-    #     raise NotImplementedError
 
     def __move_in_dims(self, coordinate: Position):
         slc = self.space
@@ -78,17 +67,23 @@ class Maze(ABC):
         space = self.space
         a = initial
 
-        while isinstance(space, list):
+        while isinstance(space, list) or (isinstance(space, str) and len(space) > 1):
             a = function(a, space)
             space = space[0]
 
         return a
 
     def dim(self) -> List[int]:
-        return self.__reduce(lambda acc, iterable: acc + [len(iterable)], [])
+        if self.dims:
+            return self.dims
+        self.dims = self.__reduce(lambda acc, iterable: acc + [len(iterable)], [])
+        return self.dims
 
     def num_nodes_in(self) -> int:
-        return self.__reduce(lambda acc, iterable: acc * len(iterable), 1)
+        if self.num_nodes:
+            return self.nums
+        self.num_nodes = self.__reduce(lambda acc, iterable: acc * len(iterable), 1)
+        return self.num_nodes
 
     def num_walkable_nodes(self) -> int:
         space = self.space
@@ -97,8 +92,10 @@ class Maze(ABC):
         while stack and isinstance(space, list):
             if isinstance(space[0], list):
                 stack.extend([s for s in space])
+            elif isinstance(space[0], str):
+                num += sum(space[0].count(p.value) for p in self.playable)
             else:
-                num += space.count(self.playable)
+                num += sum(space.count(p) for p in self.playable)
             space = stack.pop()
 
         return num
@@ -107,7 +104,11 @@ class Maze(ABC):
         return all(0 <= coor_p < dim for (coor_p, dim) in zip(coordinate, self.dims))
 
     def is_playable(self, coordinate: Position) -> bool:
-        return self.get_value(coordinate).is_playable()
+        return self.get_value(coordinate) in self.playable
+
+    def can_play_from(self, frm: Position, to: Position, dir: Position) -> bool:
+        f, t = self.get_value(frm), self.get_value(to)
+        return f.can_play_to(t, dir)
 
     @staticmethod
     def default_neighbor_shifts_for(
@@ -130,7 +131,7 @@ class Maze(ABC):
     # TODO: assumes that curr and prev positions only differ in 1 dimension
     # and connects the path between them
     # TODO: make this more generic to n-dimensional path connect with a vector
-    def set_path(self, curr, prev):
+    def set_path(self, curr, prev, to=1):
         maze = self.space
         diff_axis = [i for i, (dc, dp) in enumerate(zip(curr, prev)) if dc != dp]
         if not diff_axis:
@@ -141,12 +142,12 @@ class Maze(ABC):
 
         for r in range(indices[1] - indices[0] + 1):
             coors = prev[:diff_axis] + [indices[0] + r] + prev[diff_axis + 1 :]
-            self.set_value(coors, 1)
+            self.set_value(coors, to)
 
     @staticmethod
     def create_no_path_space(
         lengths_of_axis: Position,
-        wall_value: MazeValue = False,
+        wall_value: MazeValue,
         dimensionality: int = 2,
     ):
         if len(lengths_of_axis) == 1:

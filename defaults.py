@@ -8,19 +8,35 @@ from maze import Maze, MazeValue
 
 
 class DefaultMazeValue(Enum):
-    WALL = tuple(["|"])
-    PATH = (" ", "_")
+    WALL = "|"
+    VERTICAL_PATH = " "
+    HORIZONTAL_PATH = "_"
+    FILLER = "‧"
 
     def is_playable(self) -> bool:
-        return self != DefaultMazeValue.WALL.value
+        return self != DefaultMazeValue.WALL
 
     @staticmethod
     def get_playable() -> Tuple:
-        return DefaultMazeValue.PATH.value
+        return (DefaultMazeValue.VERTICAL_PATH, DefaultMazeValue.HORIZONTAL_PATH)
+
+    # TODO: make this n-dimensional
+    def can_play_to(self, other: "DefaultMazeValue", dir: Position) -> bool:
+        # from matrix perspective
+        if DefaultMazeValue.WALL in [self, other]:
+            return False
+        # moving down
+        if 1 == dir[0] and self == DefaultMazeValue.HORIZONTAL_PATH:
+            return False
+        # moving up
+        if -1 == dir[0] and other == DefaultMazeValue.HORIZONTAL_PATH:
+            return False
+
+        return True
 
     @staticmethod
     def get_unplayable() -> Tuple:
-        return DefaultMazeValue.WALL.value
+        return (DefaultMazeValue.WALL,)
 
     def __str__(self):
         return str(self.value)
@@ -35,6 +51,7 @@ class DefaultMaze(Maze):
         self.dims = None
         self.dim()
         self.num_nodes = None
+        self.num_nodes_in()
         self.playable = maze_value_class.get_playable()
         super().__init__()
 
@@ -54,7 +71,7 @@ def __cum_product(dims: List[int]) -> List[int]:
     return list(reversed(n))
 
 
-def color_path(maze: Maze, path: List[Position], color: str):
+def color_path(maze: Maze, path: List[Position], color: str = bcolors.OKBLUE) -> str:
     if not path:
         return ""
     path_set = set(path)
@@ -72,7 +89,7 @@ def color_path(maze: Maze, path: List[Position], color: str):
         for b in newline_breaks:
             if i % b == b - 1:
                 to_print.append("\n")
-    return " ".join(to_print)
+    return "".join(to_print)
 
 
 def color_values(
@@ -93,13 +110,3 @@ def color_values(
             if c % b == 0:
                 to_print.append("\n")
     return "".join(to_print)
-
-
-if __name__ == "__main__":
-    from dtypes import Position
-
-    space = DefaultMaze.create_no_path_space(
-        [3, 3, 3], DefaultMazeValue.get_unplayable()[0]
-    )
-    maze = DefaultMaze(space)
-    print(maze)

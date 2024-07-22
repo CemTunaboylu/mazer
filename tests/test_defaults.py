@@ -1,6 +1,7 @@
 from typing import List, Set
 from unittest import TestCase, main
 
+from defaults import DefaultMazeValue
 from maze import Maze
 
 
@@ -50,6 +51,66 @@ class TestDefaults(TestCase):
                 (0, 0, -1),
             },
         )
+
+    def test_can_play_to(self):
+        dmz = DefaultMazeValue
+        test_cases = [
+            # form, to, dir, exp
+            # does not matter which dir
+            (dmz.WALL, dmz.HORIZONTAL_PATH, [0, 1], False),
+            (
+                dmz.HORIZONTAL_PATH,
+                dmz.WALL,
+                [1, 0],
+                False,
+            ),
+            (
+                dmz.HORIZONTAL_PATH,
+                dmz.VERTICAL_PATH,
+                [1, 0],
+                False,
+            ),
+            (
+                dmz.VERTICAL_PATH,
+                dmz.WALL,
+                [0, 1],
+                False,
+            ),
+            (
+                dmz.VERTICAL_PATH,
+                dmz.HORIZONTAL_PATH,
+                [0, 1],
+                True,
+            ),
+            (
+                dmz.HORIZONTAL_PATH,
+                dmz.VERTICAL_PATH,
+                [0, 1],
+                True,
+            ),
+            (
+                dmz.VERTICAL_PATH,
+                dmz.VERTICAL_PATH,
+                [0, 1],
+                True,
+            ),
+            (
+                dmz.HORIZONTAL_PATH,
+                dmz.HORIZONTAL_PATH,
+                [0, 1],
+                True,
+            ),
+            (
+                dmz.HORIZONTAL_PATH,
+                dmz.HORIZONTAL_PATH,
+                [1, 0],
+                False,
+            ),
+        ]
+
+        for frm, to, dir, exp in test_cases:
+            r = frm.can_play_to(to, dir)
+            self.assertEqual(exp, r)
 
 
 if __name__ == "__main__":

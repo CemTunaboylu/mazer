@@ -39,3 +39,9 @@ class DisjointSet:
 
         self.parents[par_low] = par_high
         self.ranks[par_high] += self.ranks[par_low]
+
+    def __len__(self) -> int:
+        return self.size
+
+    def __repr__(self) -> str:
+        return f"\n\tp:{self.parents}\n\tr:{self.ranks}"

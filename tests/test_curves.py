@@ -38,9 +38,7 @@ class TestCurves(TestCase):
         e = exps[i]
         for i, e in enumerate(exps):
             h_res = hindex_to_2d(i, N)
-            if h_res != e:
-                print(f"point:{i}, h_res:{h_res}, exp:{e}, N:{N}")
-            self.assertEqual(hindex_to_2d(i, N), e)
+            self.assertEqual(h_res, e, f"point:{i}, h_res:{h_res}, exp:{e}, N:{N}")
 
 
 if __name__ == "__main__":
