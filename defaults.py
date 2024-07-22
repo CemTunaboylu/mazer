@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List
+from typing import List, Tuple
 from itertools import product
 
 from colors import bcolors, color_text, color_values_of
@@ -8,19 +8,19 @@ from maze import Maze, MazeValue
 
 
 class DefaultMazeValue(Enum):
-    WALL = 0
-    PATH = 1
+    WALL = tuple(["|"])
+    PATH = (" ", "_")
 
     def is_playable(self) -> bool:
-        return self == DefaultMazeValue.PATH
+        return self != DefaultMazeValue.WALL.value
 
     @staticmethod
-    def get_playable():
-        return DefaultMazeValue.PATH
+    def get_playable() -> Tuple:
+        return DefaultMazeValue.PATH.value
 
     @staticmethod
-    def get_unplayable():
-        return DefaultMazeValue.WALL
+    def get_unplayable() -> Tuple:
+        return DefaultMazeValue.WALL.value
 
     def __str__(self):
         return str(self.value)
@@ -30,12 +30,12 @@ class DefaultMazeValue(Enum):
 
 
 class DefaultMaze(Maze):
-    def __init__(self, space) -> None:
+    def __init__(self, space, maze_value_class=DefaultMazeValue) -> None:
         self.space = space
-        self.dims = self.dim()
-        self.playable = self.get_value(
-            Position([0] * len(self.dims))
-        ).__class__.get_playable()
+        self.dims = None
+        self.dim()
+        self.num_nodes = None
+        self.playable = maze_value_class.get_playable()
         super().__init__()
 
     def __str__(self) -> str:
@@ -55,6 +55,8 @@ def __cum_product(dims: List[int]) -> List[int]:
 
 
 def color_path(maze: Maze, path: List[Position], color: str):
+    if not path:
+        return ""
     path_set = set(path)
     to_print = [""]
 
@@ -73,14 +75,18 @@ def color_path(maze: Maze, path: List[Position], color: str):
     return " ".join(to_print)
 
 
-def color_values(maze: Maze, values: MazeValue, color: str = bcolors.OKGREEN):
+def color_values(
+    maze: Maze,
+    to_color: Tuple[str] = MazeValue.get_playable(),
+    color: str = bcolors.OKGREEN,
+):
     to_print = []
     newline_breaks = set(__cum_product(maze.dims[:-1]))
 
     c = 0
     for values in product(*(range(d) for d in maze.dims[:-1])):
         last_dim = maze.get_value(values)
-        v = color_values_of(last_dim, maze.playable, color, bold=True)
+        v = color_values_of(last_dim, to_color, color, bold=True)
         c += maze.dims[-1]
         to_print.append(v)
         for b in newline_breaks:
@@ -92,6 +98,8 @@ def color_values(maze: Maze, values: MazeValue, color: str = bcolors.OKGREEN):
 if __name__ == "__main__":
     from dtypes import Position
 
-    space = DefaultMaze.create_no_path_space([3, 3, 3], DefaultMazeValue.get_playable())
+    space = DefaultMaze.create_no_path_space(
+        [3, 3, 3], DefaultMazeValue.get_unplayable()[0]
+    )
     maze = DefaultMaze(space)
     print(maze)

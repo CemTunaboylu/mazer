@@ -6,6 +6,8 @@ from fibheap import makefheap, fheappush, fheappop
 from dtypes import add, Number, Position
 from maze import Maze, MazeValue
 
+PositionToDistance = Dict[Position, Tuple[Number, Union[Position, None]]]
+
 
 def djikstra(
     maze: Maze,
@@ -15,9 +17,7 @@ def djikstra(
     debug_mode: bool = False,
 ) -> Union[List[Position] | None]:
     # return inf if we didn't record its distance to start yet, trying to shrink the memory footprint
-    distances: Dict[Position, Tuple[Number, Union[Position, None]]] = defaultdict(
-        lambda: (default_distance, None)
-    )
+    distances: PositionToDistance = defaultdict(lambda: (default_distance, None))
 
     distances[start] = (0, start)
 
@@ -37,7 +37,6 @@ def djikstra(
         print(f"dims: {dims}")
         print(f"num_of_walkable_nodes: {num_of_walkable_nodes}")
         print(f"priority queue: {pri_que}")
-        print(f"path: {path}")
 
     # visited checks -> fib heap will be changing prios thus will always have at most num_nodes
     # node in it, thus emptying it corresponds to the visiting all walkable nodes

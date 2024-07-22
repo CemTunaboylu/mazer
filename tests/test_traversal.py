@@ -17,7 +17,7 @@ def create_tensor_with(
     return [create_tensor_with(dims[1:], values) for _ in range(dims[0])]
 
 
-maze_values = [DefaultMazeValue.WALL, DefaultMazeValue.get_playable()]
+maze_values = [DefaultMazeValue.WALL, DefaultMazeValue.VERTICAL_PATH]
 
 
 def create_tensor_with_playable_columns(dims: List[int], cols: List[int]):
@@ -66,6 +66,7 @@ class TestTraversal(TestCase):
                     self.assertEqual(len(t), d)
                 except AssertionError as e:
                     print(e)
+                    self.fail()
                 self.__debug()
                 if i < L:
                     t = t[0]
@@ -76,18 +77,19 @@ class TestTraversal(TestCase):
                     self.assertEqual(t, exp_vals[: len(t)])
                 except AssertionError as e:
                     print(e)
+                    self.fail()
 
     def test_num_walkable_nodes(self):
         test_cases = [
             ([1, 1], [DefaultMazeValue.WALL], 0),
-            ([1, 1], [DefaultMazeValue.get_playable()], 1),
+            ([1, 1], [DefaultMazeValue.get_playable()[0]], 1),
             ([2, 2], [DefaultMazeValue.WALL], 0),
-            ([2, 2], [DefaultMazeValue.get_playable()], 4),
-            ([3, 3], [DefaultMazeValue.WALL, DefaultMazeValue.get_playable()], 3),
-            ([3, 3, 3], [DefaultMazeValue.WALL, DefaultMazeValue.get_playable()], 9),
+            ([2, 2], [DefaultMazeValue.get_playable()[0]], 4),
+            ([3, 3], [DefaultMazeValue.WALL, DefaultMazeValue.get_playable()[0]], 3),
+            ([3, 3, 3], [DefaultMazeValue.WALL, DefaultMazeValue.get_playable()[0]], 9),
             (
                 [3, 3, 4],
-                [DefaultMazeValue.WALL, DefaultMazeValue.get_playable()],
+                [DefaultMazeValue.WALL, DefaultMazeValue.get_playable()[0]],
                 2 * 9,
             ),
         ]
@@ -103,15 +105,25 @@ class TestTraversal(TestCase):
                 self.assertEqual(exp_walkable, walkable)
             except AssertionError as e:
                 print(e)
+                self.fail()
             self.__debug()
 
     def test_djikstra(self):
         test_cases = [
             (
                 [
-                    [DefaultMazeValue.get_playable(), DefaultMazeValue.WALL],
-                    [DefaultMazeValue.WALL, DefaultMazeValue.WALL],
-                    [DefaultMazeValue.WALL, DefaultMazeValue.get_playable()],
+                    [
+                        DefaultMazeValue.get_playable()[0],
+                        DefaultMazeValue.get_unplayable()[0],
+                    ],
+                    [
+                        DefaultMazeValue.get_unplayable()[0],
+                        DefaultMazeValue.get_unplayable()[0],
+                    ],
+                    [
+                        DefaultMazeValue.get_unplayable()[0],
+                        DefaultMazeValue.get_playable()[0],
+                    ],
                 ],
                 (),
             ),
@@ -136,13 +148,13 @@ class TestTraversal(TestCase):
         for r in range(len(space)):
             copy = t[:]
             maze = DefaultMaze(copy)
-            copy[r] = [DefaultMazeValue.get_playable()] * len(t[0])
+            copy[r] = [DefaultMazeValue.get_playable()[0]] * len(t[0])
 
             path = djikstra(maze, start, end)
             self.log(color_path(maze, path, color=bcolors.FAIL))
             try:
                 self.assertEqual(len(path), len(copy) + len(copy[0]) - 1)
-            except AssertionError as e:
+            except (AssertionError, TypeError) as e:
                 print(e)
                 path = djikstra(
                     maze, start, end, debug_mode=self.debug_mode
