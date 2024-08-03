@@ -1,6 +1,6 @@
 from re import S
 from typing import Callable, DefaultDict, Dict, List, Set, Tuple
-from random import randint, seed
+import random
 from collections import defaultdict
 
 from maze import MazeValue
@@ -58,7 +58,7 @@ EllerSymbols.update(
 )
 
 
-seed(9)
+random.seed(9)
 NUM_CELLS_TO_MERGE_IN_ROW = lambda r: r // 2
 NUM_VERTICALS_TO_MERGE_IN_COL = (1, 2)
 
@@ -91,6 +91,7 @@ def reuse_disjoint_set(dset: DisjointSet, verticals: Set[int]):
 
 
 P_x = lambda x: lambda r: r > x  # approx. probability of merging
+rand_int = lambda d=1: random.randint(0, d * 1_000_000)
 
 
 def merge_cells_to_the_right_randomly(dset: DisjointSet, should_merge=P_x(50)):
@@ -98,7 +99,7 @@ def merge_cells_to_the_right_randomly(dset: DisjointSet, should_merge=P_x(50)):
     num_cols = len(dset)
     # left to right ensures that the set owner is the left most element
     for to_merge in range(num_cols - 1):
-        if not should_merge(randint(0, 1_000_000)):
+        if not should_merge(rand_int()):
             continue
         dset.union(to_merge, to_merge + 1)
 
@@ -117,7 +118,7 @@ def open_vertical_passages_for_each_region(dset: DisjointSet) -> Set[int]:
         # if by chance the same cell is selected, no problem, it creates variance
         for v in range(*NUM_VERTICALS_TO_MERGE_IN_COL):
             diff = x - w_start + 1
-            r = randint(0, diff * 1_000_000)
+            r = rand_int(diff)
             p = r % diff
             verticals.add(w_start + p)
         w_start = x + 1
