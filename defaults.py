@@ -3,7 +3,7 @@ from typing import Callable, List, Tuple
 from itertools import product
 
 from styles import bcolors, color_text, color_values_of
-from dtypes import Position
+from dtypes import Vector
 from maze import Maze, MazeValue
 
 
@@ -54,7 +54,7 @@ def __cum_product(dims: List[int]) -> List[int]:
     return list(reversed(n))
 
 
-def color_path(maze: Maze, path: List[Position], color: str = bcolors.OKBLUE) -> str:
+def color_path(maze: Maze, path: List[Vector], color: str = bcolors.OKBLUE) -> str:
     if not path:
         return ""
     path_set = set(path)
@@ -63,7 +63,7 @@ def color_path(maze: Maze, path: List[Position], color: str = bcolors.OKBLUE) ->
     newline_breaks = set(__cum_product(maze.dims))
 
     for i, coor in enumerate(product(*(range(d) for d in maze.dims))):
-        coor = Position(coor)
+        coor = Vector(coor)
         v = str(maze.get_value(coor))
         if coor in path_set:
             v = color_text(v, color, bold=True)

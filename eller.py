@@ -5,7 +5,7 @@ from collections import defaultdict
 from maze import MazeValue
 from union_find import DisjointSet
 from styles import underline
-from dtypes import Position
+from dtypes import Vector
 
 
 class EllerMazeValue(MazeValue):
@@ -26,7 +26,7 @@ class EllerMazeValue(MazeValue):
     def can_play_to(
         self,
         other: MazeValue,
-        dir: Position,
+        dir: Vector,
         *rules_to_pass: Callable[[MazeValue, MazeValue], bool],
     ) -> bool:
 

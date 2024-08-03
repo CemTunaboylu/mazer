@@ -3,19 +3,19 @@ from collections import defaultdict
 
 from fibheap import makefheap, fheappush, fheappop
 
-from dtypes import add, Number, Position
+from dtypes import add, Number, Vector
 from maze import Maze, MazeValue
 
-PositionToDistance = Dict[Position, Tuple[Number, Union[Position, None]]]
+PositionToDistance = Dict[Vector, Tuple[Number, Union[Vector, None]]]
 
 
 def djikstra(
     maze: Maze,
-    start: Position,
-    target: Union[Position, None] = None,
+    start: Vector,
+    target: Union[Vector, None] = None,
     default_distance=float("inf"),
     debug_mode: bool = False,
-) -> Union[List[Position] | None]:
+) -> Union[List[Vector] | None]:
     # return inf if we didn't record its distance to start yet, trying to shrink the memory footprint
     distances: PositionToDistance = defaultdict(lambda: (default_distance, None))
 
@@ -75,10 +75,10 @@ def djikstra(
 
 
 def reconstruct_path_between(
-    start: Position,
-    end: Position,
-    distances: Dict[Position, Tuple[Number, Union[Position, None]]],
-) -> List[Position]:
+    start: Vector,
+    end: Vector,
+    distances: Dict[Vector, Tuple[Number, Union[Vector, None]]],
+) -> List[Vector]:
     path = []
     current = end
     while current != start:

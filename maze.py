@@ -21,7 +21,7 @@ class MazeValue(Enum):
     def can_play_to(
         self,
         other: "MazeValue",
-        dir: Position,
+        dir: Vector,
         *rules_to_pass: Callable[["MazeValue", "MazeValue"], bool],
     ) -> bool:
         unplayables = set(self.get_unplayable())
@@ -61,16 +61,16 @@ class Maze:
     def __repr__(self) -> str:
         pass
 
-    def __move_in_dims(self, coordinate: Position):
+    def __move_in_dims(self, coordinate: Vector):
         slc = self.space
         for c in coordinate:
             slc = slc[c]
         return slc
 
-    def get_value(self, coordinate: Position) -> MazeValue:
+    def get_value(self, coordinate: Vector) -> MazeValue:
         return self.__move_in_dims(coordinate)
 
-    def set_value(self, coordinate: Position, to: MazeValue):
+    def set_value(self, coordinate: Vector, to: MazeValue):
         slc = self.__move_in_dims(coordinate[:-1])
         slc[coordinate[-1]] = to
 
@@ -111,13 +111,13 @@ class Maze:
 
         return num
 
-    def is_in(self, coordinate: Position) -> bool:
+    def is_in(self, coordinate: Vector) -> bool:
         return all(0 <= coor_p < dim for (coor_p, dim) in zip(coordinate, self.dims))
 
-    def is_playable(self, coordinate: Position) -> bool:
+    def is_playable(self, coordinate: Vector) -> bool:
         return self.get_value(coordinate) in self.playable
 
-    def can_play_from(self, frm: Position, to: Position, dir: Position) -> bool:
+    def can_play_from(self, frm: Vector, to: Vector, dir: Vector) -> bool:
         f, t = self.get_value(frm), self.get_value(to)
         return f.can_play_to(t, dir)
 
@@ -126,7 +126,7 @@ class Maze:
         dim: int,
         can_move_diagonally: bool = False,
         dirs: List[int] = [-1, 1],  # possible directions for each dimension
-    ) -> Generator[Position, None, None]:
+    ) -> Generator[Vector, None, None]:
 
         # TODO: implement this
         if can_move_diagonally:
@@ -137,7 +137,7 @@ class Maze:
             for i in dirs:
                 n = [0] * dim
                 n[d] = i
-                yield Position(n)
+                yield Vector(n)
 
     # TODO: assumes that curr and prev positions only differ in 1 dimension
     # and connects the path between them
@@ -157,7 +157,7 @@ class Maze:
 
     @staticmethod
     def create_no_path_space(
-        lengths_of_axis: Position,
+        lengths_of_axis: Vector,
         wall_value: MazeValue,
         dimensionality: int = 2,
     ):

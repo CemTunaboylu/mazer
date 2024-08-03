@@ -2,7 +2,7 @@ from unittest import main
 
 from base_test import BaseTest
 from defaults import DefaultMaze, color_path
-from dtypes import Position
+from dtypes import Vector
 from eller import (
     convert_to_row,
     ellers_algorithm,
@@ -60,8 +60,8 @@ class TestEller(BaseTest):
             target = (len(rows) - 1, target_row)
             path = djikstra(
                 maze,
-                Position((0, start_row)),
-                Position(target),
+                Vector((0, start_row)),
+                Vector(target),
             )
             replacements = {
                 " ": EllerMazeValue.FILLER.value,

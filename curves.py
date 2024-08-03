@@ -3,7 +3,7 @@ from typing import List, Tuple
 
 from styles import color_values_of
 from defaults import DefaultMaze, DefaultMazeValue
-from dtypes import Position
+from dtypes import Vector
 from gray import gray_code_of
 from maze import *
 

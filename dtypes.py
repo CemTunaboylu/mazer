@@ -6,28 +6,27 @@ from typing import Callable, NewType, Tuple, Union
 from collections import namedtuple
 
 Number = Union[float, int]
-# TODO: refactor this to be a dynamic nD tuple
-Position = NewType("Position", Tuple[int, ...])
+Vector = NewType("Vector", Tuple[int, ...])
 SymbolSet = namedtuple("SymbolSet", ["playable", "separator", "unplayable"])
 
 
 # Order can matter for the pos and other
 def __operate_on(
     op: Callable[[Number, Number], Number],
-    pos: Position,
-    other: Position,
-) -> Position:
+    pos: Vector,
+    other: Vector,
+) -> Vector:
     # TODO: hold each position as a generator if dimensions are big?
-    return Position(tuple(op(p, o) for p, o in zip(pos, other)))
+    return Vector(tuple(op(p, o) for p, o in zip(pos, other)))
 
 
-def add(pos: Position, other: Position) -> Position:  # Generator[int, None, None]:
+def add(pos: Vector, other: Vector) -> Vector:  # Generator[int, None, None]:
     return __operate_on(add_op, pos, other)
 
 
-def sub(pos: Position, other: Position) -> Position:  # Generator[int, None, None]:
+def sub(pos: Vector, other: Vector) -> Vector:  # Generator[int, None, None]:
     return __operate_on(sub_op, pos, other)
 
 
-def eq(pos: Position, other: Position) -> bool:
+def eq(pos: Vector, other: Vector) -> bool:
     return all(__operate_on(eq_op, pos, other))
