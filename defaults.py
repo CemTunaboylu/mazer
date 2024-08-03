@@ -1,5 +1,4 @@
-from enum import Enum
-from typing import Callable, List, Tuple
+from typing import List, Tuple
 from itertools import product
 
 from styles import bcolors, color_text, color_values_of

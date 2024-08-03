@@ -1,6 +1,6 @@
 from abc import ABCMeta, abstractmethod
 from enum import Enum
-from typing import Generator, List
+from typing import Dict, Generator, List
 
 from dtypes import *
 
@@ -32,33 +32,68 @@ class MazeValue(Enum):
         return all(rule(self, other) for rule in rules_to_pass)
 
     @staticmethod
+    @abstractmethod
     def get_playable() -> Tuple:
         pass
 
     @staticmethod
+    @abstractmethod
     def get_unplayable() -> Tuple:
         pass
 
 
-# TODO: Add pre-processors to maze such as how many obstacles there are etc
-required_attributes_for_maze = ["space", "playable", "dims", "num_nodes"]
+class MetaMaze(type):
+    __metaclass__ = ABCMeta
+    maze_types: Dict[str, type] = {}
+    required_attributes_for_maze = ["space", "playable", "dims", "num_nodes"]
+
+    def __init__(cls, cls_name, cls_bases, cls_dict):
+        # super(MetaMaze, cls).__init__(cls_name, cls_bases, cls_dict)
+        if not MazeBase in cls_bases:
+            MetaMaze.maze_types[cls_name] = cls
+
+    def __call__(self, *args, **kwargs):
+        make = kwargs.get("make", "")
+        obj = MetaMaze.maze_types.get(make, None)
+        if not obj:
+            if not self.__class__.__name__ in MetaMaze.maze_types:
+                new_class = MetaMaze(make, (GenericMaze,), {})
+                globals()[make] = new_class
+                obj = new_class(*args, **kwargs)
+            else:
+                obj = super(MetaMaze, self).__call__(*args, **kwargs)
+        else:
+            for required_attr in MetaMaze.required_attributes_for_maze:
+                # if there is not such attribute, force it :)
+                if not getattr(self, required_attr, None):
+                    setattr(self, required_attr, None)
+                    # print(f"'{required_attr}' is injected to '{make}' - {MetaMaze}")
+        return obj
+
+
+class MazeBase(object):
+    pass
 
 
 # TODO: implement an iterator
-class Maze:
-    __metaclass__ = ABCMeta
+class Maze(MazeBase):
+    __metaclass__ = MetaMaze
 
-    def __init__(self) -> None:
-        for attr in required_attributes_for_maze:
-            if not hasattr(self, attr):
-                raise ValueError(f"Missing attribute: {attr}")
+    def __init__(self, **kwargs):
+        self.__metaclass__.__call__(self, **kwargs)
+        for name, value in kwargs.items():
+            setattr(self, name, value)
+
+    @abstractmethod
+    def __repr__(self):
+        return "<%s>" % self.description
+
+    @property
+    def description(self):
+        return f"{self.__dict__}"
 
     @abstractmethod
     def __str__(self) -> str:
-        pass
-
-    @abstractmethod
-    def __repr__(self) -> str:
         pass
 
     def __move_in_dims(self, coordinate: Vector):
@@ -171,23 +206,7 @@ class Maze:
         return space
 
 
-"""
-[z, y, x]
-y
-|    z
-|   / 
-|  /
-| /
-|/_ _ _ _  x
-
-[0,1,1]
-[0,4,1]
-
-y
-|    
-| 
-|  
-| 
-|_ _ _ _ _  x
-
-"""
+class GenericMaze(Maze):
+    def __init__(self, **kwargs):
+        kwargs["make"] = self.__class__.__name__
+        super(GenericMaze, self).__init__(**kwargs)
