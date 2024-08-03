@@ -1,23 +1,25 @@
 from unittest import main
 
 from base_test import BaseTest
-from defaults import DefaultMaze, DefaultMazeValue, color_path
+from defaults import DefaultMaze, color_path
 from dtypes import Position
 from eller import (
     convert_to_row,
     ellers_algorithm,
     reuse_disjoint_set,
     pretty_print,
-    underline,
+    EllerMazeValue,
 )
+from styles import underline
 from traversal import djikstra
-from test_helpers import ignore
+from test_helpers import debug
 from union_find import DisjointSet
 
 
 class TestEller(BaseTest):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
+        self.debug_mode = False
 
     def test_convert_to_row(self):
         p = [0, 0, 0, 3, 3, 5, 5, 5]
@@ -40,17 +42,18 @@ class TestEller(BaseTest):
         self.assertListEqual([1, 1, 1, 1, 1, 2, 1, 1], d.ranks)
 
     def test_eller_is_fully_connected(self):
-        test_cases = [(3, 7), (15, 15)]
+        test_cases = [(3, 7), (15, 15), (28, 28)]
+        play = EllerMazeValue.get_playable()[0]
         for dims in test_cases:
             rows = ellers_algorithm(dims)
             self.log(pretty_print(rows))
             row_values_to_maze_values(rows)
 
-            maze = DefaultMaze(rows)
-            start_row = rows[1].index(DefaultMazeValue.VERTICAL_PATH)
+            maze = DefaultMaze(rows, maze_value_class=EllerMazeValue)
+            start_row = rows[1].index(EllerMazeValue.FULL_PATH)
             target_row = (
                 len(rows[-1])
-                - list(reversed(rows[-1])).index(DefaultMazeValue.HORIZONTAL_PATH)
+                - list(reversed(rows[-1])).index(EllerMazeValue.HORIZONTAL_PATH)
                 - 1
             )
 
@@ -60,31 +63,29 @@ class TestEller(BaseTest):
                 Position((0, start_row)),
                 Position(target),
             )
-            if self.debug_mode:
-                dmz = DefaultMazeValue
-                replacements = {" ": dmz.FILLER.value, "_": underline(dmz.FILLER.value)}
+            replacements = {
+                " ": EllerMazeValue.FILLER.value,
+                "_": underline(EllerMazeValue.FILLER.value),
+            }
 
-                def replace(v: DefaultMazeValue):
-                    v = v.value
-                    if v in replacements:
-                        v = replacements[v]
-                    return v
+            def replace(v: EllerMazeValue):
+                v = v.value
+                if v in replacements:
+                    v = replacements[v]
+                return v
 
-                for i, r in enumerate(rows):
-                    rows[i] = [replace(dmv) for dmv in r]
-                    self.log(f"{'_' * len(maze.space[0])}")
-                    self.log(color_path(maze, path))
+            for i, r in enumerate(rows):
+                rows[i] = [replace(dmv) for dmv in r]
+            self.log(f"{EllerMazeValue.HORIZONTAL_PATH.value * len(maze.space[0])}")
+            self.log(color_path(maze, path))
+            self.logged_assert(self, self.assertIsNotNone, (path,))
             self.logged_assert(self, self.assertTrue, (len(path) > 0,))
+            self.debug()
 
 
 def row_values_to_maze_values(rows):
-    dmz = DefaultMazeValue
-    vals = {
-        # dmz.FILLER: dmz.HORIZONTAL_PATH,
-        dmz.WALL.value: dmz.WALL,
-        dmz.HORIZONTAL_PATH.value: dmz.HORIZONTAL_PATH,
-        dmz.VERTICAL_PATH.value: dmz.VERTICAL_PATH,
-    }
+    emv = EllerMazeValue
+    vals = {e.value: e for e in EllerMazeValue}
     for i, row in enumerate(rows):
         row = [vals[v] for v in row if v in vals]
         rows[i] = row

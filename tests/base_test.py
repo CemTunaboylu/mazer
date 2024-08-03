@@ -1,4 +1,6 @@
+from re import I
 from unittest import TestCase
+from typing import Any, List
 
 
 class BaseTest(TestCase):
@@ -6,7 +8,7 @@ class BaseTest(TestCase):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.debug_mode = False
-        self.debug_logs = []
+        self.debug_logs: List[Any] = []
 
     def debug(self):
         if self.debug_mode:
@@ -20,9 +22,20 @@ class BaseTest(TestCase):
         self.debug_logs.append(*args, **kwargs)
 
     def logged_assert(self, test, assertion, args):
+        fail = False
         try:
             assertion(*args)
         except Exception as e:
+            fail = True
             self.log(e)
-            self.debug()
-            test.fail()
+        if not fail:
+            return
+        defer = None
+        if not self.debug_mode:
+            old = self.debug_mode
+            defer = lambda: self.debug_mode == old
+            self.debug_mode = True
+        self.debug()
+        if defer:
+            defer()
+        test.fail()

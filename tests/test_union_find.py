@@ -1,4 +1,4 @@
-from unittest import TestCase, main
+from unittest import main
 
 from base_test import BaseTest
 from union_find import DisjointSet

@@ -1,9 +1,8 @@
 from typing import List
 from unittest import main
-from unittest.mock import Base
 
 from base_test import BaseTest
-from colors import bcolors
+from styles import bcolors
 from dtypes import add
 from defaults import DefaultMaze, DefaultMazeValue, color_path
 from test_helpers import ignore, debug
@@ -19,7 +18,7 @@ def create_tensor_with(
     return [create_tensor_with(dims[1:], values) for _ in range(dims[0])]
 
 
-maze_values = [DefaultMazeValue.WALL, DefaultMazeValue.VERTICAL_PATH]
+maze_values = [DefaultMazeValue.get_unplayable()[0], DefaultMazeValue.get_playable()[0]]
 
 
 def create_tensor_with_playable_columns(dims: List[int], cols: List[int]):
@@ -34,14 +33,18 @@ class TestTraversal(BaseTest):
         super().__init__(*args, **kwargs)
 
     def test_create_tensor_with(self):
+        play, unplay = (
+            DefaultMazeValue.get_playable()[0],
+            DefaultMazeValue.get_unplayable()[0],
+        )
         test_cases = [
-            ([1, 1], [DefaultMazeValue.WALL]),
-            ([1, 1], [DefaultMazeValue.get_playable()]),
-            ([2, 2], [DefaultMazeValue.WALL]),
-            ([2, 2], [DefaultMazeValue.get_playable()]),
-            ([3, 3], [DefaultMazeValue.WALL, DefaultMazeValue.get_playable()]),
-            ([3, 3, 3], [DefaultMazeValue.WALL, DefaultMazeValue.get_playable()]),
-            ([3, 3, 4], [DefaultMazeValue.WALL, DefaultMazeValue.get_playable()]),
+            ([1, 1], [unplay]),
+            ([1, 1], [play]),
+            ([2, 2], [unplay]),
+            ([2, 2], [play]),
+            ([3, 3], [unplay, play]),
+            ([3, 3, 3], [unplay, play]),
+            ([3, 3, 4], [unplay, play]),
         ]
 
         for dims, values in test_cases:
@@ -62,16 +65,20 @@ class TestTraversal(BaseTest):
                 self.logged_assert(self, self.assertEqual, (t, exp_vals[: len(t)]))
 
     def test_num_walkable_nodes(self):
+        play, unplay = (
+            DefaultMazeValue.get_playable()[0],
+            DefaultMazeValue.get_unplayable()[0],
+        )
         test_cases = [
-            ([1, 1], [DefaultMazeValue.WALL], 0),
-            ([1, 1], [DefaultMazeValue.get_playable()[0]], 1),
-            ([2, 2], [DefaultMazeValue.WALL], 0),
-            ([2, 2], [DefaultMazeValue.get_playable()[0]], 4),
-            ([3, 3], [DefaultMazeValue.WALL, DefaultMazeValue.get_playable()[0]], 3),
-            ([3, 3, 3], [DefaultMazeValue.WALL, DefaultMazeValue.get_playable()[0]], 9),
+            ([1, 1], [unplay], 0),
+            ([1, 1], [play], 1),
+            ([2, 2], [unplay], 0),
+            ([2, 2], [play], 4),
+            ([3, 3], [unplay, play], 3),
+            ([3, 3, 3], [unplay, play], 9),
             (
                 [3, 3, 4],
-                [DefaultMazeValue.WALL, DefaultMazeValue.get_playable()[0]],
+                [unplay, play],
                 2 * 9,
             ),
         ]
@@ -86,20 +93,24 @@ class TestTraversal(BaseTest):
             self.logged_assert(self, self.assertEqual, (exp_walkable, walkable))
 
     def test_djikstra(self):
+        play, unplay = (
+            DefaultMazeValue.get_playable()[0],
+            DefaultMazeValue.get_unplayable()[0],
+        )
         test_cases = [
             (
                 [
                     [
-                        DefaultMazeValue.get_playable()[0],
-                        DefaultMazeValue.get_unplayable()[0],
+                        play,
+                        unplay,
                     ],
                     [
-                        DefaultMazeValue.get_unplayable()[0],
-                        DefaultMazeValue.get_unplayable()[0],
+                        unplay,
+                        unplay,
                     ],
                     [
-                        DefaultMazeValue.get_unplayable()[0],
-                        DefaultMazeValue.get_playable()[0],
+                        unplay,
+                        play,
                     ],
                 ],
                 (),
@@ -120,7 +131,7 @@ class TestTraversal(BaseTest):
         for r in range(len(space)):
             copy = t[:]
             maze = DefaultMaze(copy)
-            copy[r] = [DefaultMazeValue.get_playable()[0]] * len(t[0])
+            copy[r] = [play] * len(t[0])
 
             path = djikstra(maze, start, end)
             self.logged_assert(self, self.assertIsNotNone, (path,))

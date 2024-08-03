@@ -1,4 +1,5 @@
-from abc import ABC, abstractmethod
+from abc import ABCMeta, abstractmethod
+from enum import Enum
 from typing import Generator, List
 
 from dtypes import *
@@ -13,21 +14,29 @@ from dtypes import *
 # TODO: First of all, there should be random obstacles in the maze.
 
 
-class MazeValue(ABC):
-    @abstractmethod
-    def is_playable(self) -> bool:
-        pass
+class MazeValue(Enum):
+    __metaclass__ = ABCMeta
 
-    @abstractmethod
-    def can_play_to(self, other: "MazeValue", dir: Position) -> bool:
+    # TODO: make this n-dimensional
+    def can_play_to(
+        self,
+        other: "MazeValue",
+        dir: Position,
+        *rules_to_pass: Callable[["MazeValue", "MazeValue"], bool],
+    ) -> bool:
+        unplayables = set(self.get_unplayable())
+        if self in unplayables:
+            return False
+        if other in unplayables:
+            return False
+        return all(rule(self, other) for rule in rules_to_pass)
+
+    @staticmethod
+    def get_playable() -> Tuple:
         pass
 
     @staticmethod
-    def get_playable():
-        pass
-
-    @staticmethod
-    def get_unplayable():
+    def get_unplayable() -> Tuple:
         pass
 
 
@@ -36,7 +45,9 @@ required_attributes_for_maze = ["space", "playable", "dims", "num_nodes"]
 
 
 # TODO: implement an iterator
-class Maze(ABC):
+class Maze:
+    __metaclass__ = ABCMeta
+
     def __init__(self) -> None:
         for attr in required_attributes_for_maze:
             if not hasattr(self, attr):
@@ -67,7 +78,7 @@ class Maze(ABC):
         space = self.space
         a = initial
 
-        while isinstance(space, list) or (isinstance(space, str) and len(space) > 1):
+        while (isinstance(space, list) or isinstance(space, str)) and len(space) > 1:
             a = function(a, space)
             space = space[0]
 

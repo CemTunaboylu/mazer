@@ -3,9 +3,12 @@ from operator import sub as sub_op
 from operator import eq as eq_op
 
 from typing import Callable, NewType, Tuple, Union
+from collections import namedtuple
 
 Number = Union[float, int]
+# TODO: refactor this to be a dynamic nD tuple
 Position = NewType("Position", Tuple[int, ...])
+SymbolSet = namedtuple("SymbolSet", ["playable", "separator", "unplayable"])
 
 
 # Order can matter for the pos and other

@@ -1,7 +1,7 @@
 from sys import argv
 from typing import List, Tuple
 
-from colors import color_values_of
+from styles import color_values_of
 from defaults import DefaultMaze, DefaultMazeValue
 from dtypes import Position
 from gray import gray_code_of

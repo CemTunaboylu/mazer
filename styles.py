@@ -17,3 +17,9 @@ def color_text(text: str, color: str = bcolors.OKGREEN, bold: bool = False) -> s
 def color_values_of(iterable, val_to_color, color=bcolors.OKGREEN, bold=True):
     clr = lambda v: color_text(str(v), color, bold) if v == val_to_color else str(v)
     return " ".join([clr(i) for i in iterable])
+
+
+def underline(s: str) -> str:
+    end = "\033[0m"
+    underline = "\033[4m"
+    return underline + s + end

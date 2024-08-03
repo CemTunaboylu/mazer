@@ -57,64 +57,77 @@ class TestDefaults(BaseTest):
         )
 
     def test_can_play_to(self):
-        dmz = DefaultMazeValue
+        dmv = DefaultMazeValue
+        play, unplay = (dmv.get_playable()[0], dmv.get_unplayable()[0])
         test_cases = [
             # form, to, dir, exp
             # does not matter which dir
-            (dmz.WALL, dmz.HORIZONTAL_PATH, [0, 1], False),
+            (unplay, play, [0, 1], False),
             (
-                dmz.HORIZONTAL_PATH,
-                dmz.WALL,
+                play,
+                unplay,
                 [1, 0],
                 False,
             ),
             (
-                dmz.HORIZONTAL_PATH,
-                dmz.VERTICAL_PATH,
+                play,
+                play,
                 [1, 0],
+                True,
+            ),
+            (
+                play,
+                unplay,
+                [0, 1],
                 False,
             ),
             (
-                dmz.VERTICAL_PATH,
-                dmz.WALL,
-                [0, 1],
-                False,
-            ),
-            (
-                dmz.VERTICAL_PATH,
-                dmz.HORIZONTAL_PATH,
+                play,
+                play,
                 [0, 1],
                 True,
             ),
             (
-                dmz.HORIZONTAL_PATH,
-                dmz.VERTICAL_PATH,
+                play,
+                play,
                 [0, 1],
                 True,
             ),
             (
-                dmz.VERTICAL_PATH,
-                dmz.VERTICAL_PATH,
+                play,
+                play,
                 [0, 1],
                 True,
             ),
             (
-                dmz.HORIZONTAL_PATH,
-                dmz.HORIZONTAL_PATH,
+                play,
+                play,
                 [0, 1],
                 True,
-            ),
-            (
-                dmz.HORIZONTAL_PATH,
-                dmz.HORIZONTAL_PATH,
-                [1, 0],
-                False,
             ),
         ]
 
         for frm, to, dir, exp in test_cases:
+            self.log(f"{frm}, {to}, {dir}, {exp}")
             r = frm.can_play_to(to, dir)
-            self.assertEqual(exp, r)
+            self.log(f"{r}")
+            # self.assertEqual(exp, r)
+            self.logged_assert(self, self.assertEqual, (exp, r))
+
+    def test_custom_rules_for_can_play_to(self):
+        dmv = DefaultMazeValue
+        play = dmv.get_playable()[0]
+        normally_playable = (
+            play,
+            play,
+            [1, 0],
+        )
+        for rule_return in [True, False]:
+            frm, to, dir = normally_playable
+            r = frm.can_play_to(
+                to, dir, lambda a, b: rule_return, lambda a, b: rule_return
+            )
+            self.assertEqual(rule_return, r)
 
 
 if __name__ == "__main__":

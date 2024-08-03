@@ -1,38 +1,21 @@
 from enum import Enum
-from typing import List, Tuple
+from typing import Callable, List, Tuple
 from itertools import product
 
-from colors import bcolors, color_text, color_values_of
+from styles import bcolors, color_text, color_values_of
 from dtypes import Position
 from maze import Maze, MazeValue
 
 
-class DefaultMazeValue(Enum):
-    WALL = "|"
-    VERTICAL_PATH = " "
-    HORIZONTAL_PATH = "_"
+class DefaultMazeValue(MazeValue):
+    WALL = "◼"
+    # "●○◎◉⦿◇❖✪⊕⊖⊗⊘⊙⊚⊛⊜⊝⨀⨴⨵⨶⨳⨷⨸⩇⟐⟡⦾⦿⧀⧁⧂⧉⧈⧇⧆⧳⧲⧱⧰⧯⧮⧬⧭"
+    PATH = "☐"
     FILLER = "‧"
-
-    def is_playable(self) -> bool:
-        return self != DefaultMazeValue.WALL
 
     @staticmethod
     def get_playable() -> Tuple:
-        return (DefaultMazeValue.VERTICAL_PATH, DefaultMazeValue.HORIZONTAL_PATH)
-
-    # TODO: make this n-dimensional
-    def can_play_to(self, other: "DefaultMazeValue", dir: Position) -> bool:
-        # from matrix perspective
-        if DefaultMazeValue.WALL in [self, other]:
-            return False
-        # moving down
-        if 1 == dir[0] and self == DefaultMazeValue.HORIZONTAL_PATH:
-            return False
-        # moving up
-        if -1 == dir[0] and other == DefaultMazeValue.HORIZONTAL_PATH:
-            return False
-
-        return True
+        return (DefaultMazeValue.PATH,)
 
     @staticmethod
     def get_unplayable() -> Tuple:
@@ -94,7 +77,7 @@ def color_path(maze: Maze, path: List[Position], color: str = bcolors.OKBLUE) ->
 
 def color_values(
     maze: Maze,
-    to_color: Tuple[str] = MazeValue.get_playable(),
+    to_color: Tuple[str] = DefaultMazeValue.get_playable(),
     color: str = bcolors.OKGREEN,
 ):
     to_print = []
