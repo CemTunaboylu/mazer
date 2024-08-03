@@ -4,8 +4,8 @@ from operator import eq as eq_op
 
 from typing import Callable, NewType, Tuple, Union
 
-Number = Union[float, int]
-Vector = NewType("Vector", Tuple[int, ...])
+Number = int
+Vector = NewType("Vector", Tuple[Number, ...])
 
 
 # Order can matter for the pos and other
