@@ -3,11 +3,9 @@ from operator import sub as sub_op
 from operator import eq as eq_op
 
 from typing import Callable, NewType, Tuple, Union
-from collections import namedtuple
 
 Number = Union[float, int]
 Vector = NewType("Vector", Tuple[int, ...])
-SymbolSet = namedtuple("SymbolSet", ["playable", "separator", "unplayable"])
 
 
 # Order can matter for the pos and other
