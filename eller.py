@@ -1,12 +1,11 @@
-from re import S
-from typing import Callable, DefaultDict, Dict, List, Set, Tuple
+from typing import Callable, DefaultDict, List, Set, Tuple
 import random
 from collections import defaultdict
 
 from maze import MazeValue
 from union_find import DisjointSet
 from styles import underline
-from dtypes import Position, SymbolSet
+from dtypes import Position
 
 
 class EllerMazeValue(MazeValue):
@@ -221,18 +220,31 @@ def prepare_debug_symbols(
     )
 
 
-def convert_to_row(dset: DisjointSet, verticals: Set[int], debug=False):
-    row = ["|"]
+def convert_to_row(
+    dset: DisjointSet,
+    verticals: Set[int],
+    debug=False,
+    symbol_set: DefaultDict[str, str] = EllerSymbols,
+):
+    row = [symbol_set.get("separator")]
     for x in range(len(dset) - 1):  # move left to right
         args = (dset, verticals, x, x + 1)
-        symbols = prepare_symbols(*args) if not debug else prepare_debug_symbols(*args)
+        symbols = (
+            prepare_symbols(*args, symbol_set=symbol_set)
+            if not debug
+            else prepare_debug_symbols(*args, symbol_set=symbol_set)
+        )
         row.extend(symbols)
 
     # handle last set
     x = len(dset) - 1
     args = (dset, verticals, x, x - 1)
-    last_symbol = prepare_symbols(*args) if not debug else prepare_debug_symbols(*args)
-    last_symbol[-1] = "|"
+    last_symbol = (
+        prepare_symbols(*args, symbol_set=symbol_set)
+        if not debug
+        else prepare_debug_symbols(*args, symbol_set=symbol_set)
+    )
+    last_symbol[-1] = symbol_set.get("separator")
     row.extend(last_symbol)
     return "".join(row)
 
