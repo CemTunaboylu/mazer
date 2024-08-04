@@ -47,42 +47,22 @@ class MetaMaze(type):
     maze_types: Dict[str, type] = {}
     required_attributes_for_maze = ["space", "playable", "dims", "num_nodes"]
 
-    def __init__(cls, cls_name, cls_bases, cls_dict):
-        # super(MetaMaze, cls).__init__(cls_name, cls_bases, cls_dict)
-        if not MazeBase in cls_bases:
-            MetaMaze.maze_types[cls_name] = cls
-
     def __call__(self, *args, **kwargs):
-        make = kwargs.get("make", "")
-        obj = MetaMaze.maze_types.get(make, None)
-        if not obj:
-            if not self.__class__.__name__ in MetaMaze.maze_types:
-                new_class = MetaMaze(make, (GenericMaze,), {})
-                globals()[make] = new_class
-                obj = new_class(*args, **kwargs)
-            else:
-                obj = super(MetaMaze, self).__call__(*args, **kwargs)
-        else:
-            for required_attr in MetaMaze.required_attributes_for_maze:
-                # if there is not such attribute, force it :)
-                if not getattr(self, required_attr, None):
-                    setattr(self, required_attr, None)
-                    # print(f"'{required_attr}' is injected to '{make}' - {MetaMaze}")
-        return obj
-
-
-class MazeBase(object):
-    pass
+        for required_attr in MetaMaze.required_attributes_for_maze:
+            # if there is not such attribute, force it :)
+            if not getattr(self, required_attr, None):
+                setattr(self, required_attr, None)
+                # print(f"'{required_attr}' is injected to '{make}' - {MetaMaze}")
 
 
 # TODO: implement an iterator
-class Maze(MazeBase):
+class Maze:
     __metaclass__ = MetaMaze
 
     def __init__(self, **kwargs):
-        self.__metaclass__.__call__(self, **kwargs)
         for name, value in kwargs.items():
             setattr(self, name, value)
+        self.__metaclass__.__call__(self, **kwargs)
 
     @abstractmethod
     def __repr__(self):
