@@ -28,6 +28,7 @@ class TestEller(BaseTest):
         L = len(p)
         d = DisjointSet(L, parents=p, ranks=r)
         r = convert_to_row(d, v)
+        r = "".join([v.value for v in r])
         exp = "|  ___|  _|    _|"
         self.assertEqual(exp, r, f"{exp}!={r}")
 
@@ -47,7 +48,6 @@ class TestEller(BaseTest):
         for dims in test_cases:
             rows = ellers_algorithm(dims)
             self.log(pretty_print(rows))
-            row_values_to_maze_values(rows)
 
             maze = DefaultMaze(rows, maze_value_class=EllerMazeValue)
             start_row = rows[1].index(EllerMazeValue.FULL_PATH)
@@ -81,14 +81,6 @@ class TestEller(BaseTest):
             self.logged_assert(self, self.assertIsNotNone, (path,))
             self.logged_assert(self, self.assertTrue, (len(path) > 0,))
             self.debug()
-
-
-def row_values_to_maze_values(rows):
-    emv = EllerMazeValue
-    vals = {e.value: e for e in EllerMazeValue}
-    for i, row in enumerate(rows):
-        row = [vals[v] for v in row if v in vals]
-        rows[i] = row
 
 
 if __name__ == "__main__":

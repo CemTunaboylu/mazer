@@ -1,4 +1,4 @@
-from typing import Callable, DefaultDict, List, Set, Tuple
+from typing import Callable, DefaultDict, List, Set, Tuple, Union
 import random
 from collections import defaultdict
 
@@ -46,13 +46,15 @@ class EllerMazeValue(MazeValue):
         return str(self.value)
 
 
-EllerSymbols: DefaultDict[str, str] = defaultdict(lambda: "")
+EllerSymbols: DefaultDict[str, EllerMazeValue] = defaultdict(
+    lambda: EllerMazeValue.FILLER
+)
 EllerSymbols.update(
     {
-        "passable": " ",
-        "horizontal_passable": "_",
-        "separator": "|",
-        "unplayable": "|",
+        "passable": EllerMazeValue.FULL_PATH,
+        "horizontal_passable": EllerMazeValue.HORIZONTAL_PATH,
+        "separator": EllerMazeValue.WALL,
+        "unplayable": EllerMazeValue.WALL,
     }
 )
 
@@ -157,9 +159,11 @@ def __symbols(
     verticals: Set[int],
     x: int,
     other: int,
-    decide_cell: Callable[[bool, int], str],
-    decide_add: Callable[[bool, str], str],
-    symbol_set: DefaultDict[str, str],
+    decide_cell: Callable[[bool, int], Union[EllerMazeValue, str]],
+    decide_add: Callable[
+        [bool, Union[EllerMazeValue, str]], Union[EllerMazeValue, str]
+    ],
+    symbol_set: DefaultDict[str, Union[EllerMazeValue, str]],
 ):
     set_x = dset.find(x)
     set_next = dset.find(other)
@@ -175,9 +179,9 @@ def prepare_symbols(
     verticals: Set[int],
     x: int,
     other: int,
-    symbol_set: DefaultDict[str, str] = EllerSymbols,
+    symbol_set: DefaultDict[str, EllerMazeValue] = EllerSymbols,
 ):
-    def decide_cell(b: bool, _: int) -> str:
+    def decide_cell(b: bool, _: int) -> EllerMazeValue:
         return (
             symbol_set.get("passable") if b else symbol_set.get("horizontal_passable")
         )
@@ -199,7 +203,7 @@ def prepare_debug_symbols(
     verticals: Set[int],
     x: int,
     other: int,
-    symbol_set: DefaultDict[str, str] = EllerSymbols,
+    symbol_set: DefaultDict[str, EllerMazeValue] = EllerSymbols,
 ):
     from string import ascii_lowercase
 
@@ -208,6 +212,9 @@ def prepare_debug_symbols(
         return s_set_x if b else underline(s_set_x)
 
     decide_add = lambda b, s_set_x: s_set_x if b else underline(s_set_x)
+
+    for k, w in symbol_set.items():
+        symbol_set[k] = w.value
 
     return __symbols(
         dset,
@@ -224,7 +231,7 @@ def convert_to_row(
     dset: DisjointSet,
     verticals: Set[int],
     debug=False,
-    symbol_set: DefaultDict[str, str] = EllerSymbols,
+    symbol_set: DefaultDict[str, Union[EllerMazeValue, str]] = EllerSymbols,
 ):
     row = [symbol_set.get("separator")]
     for x in range(len(dset) - 1):  # move left to right
@@ -246,18 +253,25 @@ def convert_to_row(
     )
     last_symbol[-1] = symbol_set.get("separator")
     row.extend(last_symbol)
-    return "".join(row)
+    if isinstance(row[0], str):
+        return "".join(row)
+    return row
 
 
 def pretty_print(
     rows,
-    print_col_witdth: bool = False,
-    symbol_set: DefaultDict[str, str] = EllerSymbols,
+    print_col_width: bool = False,
+    symbol_set: DefaultDict[str, Union[EllerMazeValue, str]] = EllerSymbols,
 ) -> str:
     to_print = []
     L = len(rows[0])
-    to_print.append("".join([symbol_set.get("horizontal_passable")] * L))
-    if print_col_witdth:
+    passable = symbol_set.get("horizontal_passable")
+    if isinstance(passable, EllerMazeValue):
+        passable = passable.value
+    to_print.append("".join([passable] * L))
+    if isinstance(rows[0][0], EllerMazeValue):
+        rows = [v.value for row in rows for v in row]
+    if print_col_width:
         to_print.extend([str((r, len(r))) for r in rows])
     else:
         to_print.extend([str(r) for r in rows])
