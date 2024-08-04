@@ -1,7 +1,7 @@
 from unittest import main
 
 from base_test import BaseTest
-from union_find import DisjointSet
+from generators.union_find import DisjointSet
 
 
 class TestDisjointSet(BaseTest):

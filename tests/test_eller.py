@@ -3,7 +3,7 @@ from unittest import main
 from base_test import BaseTest
 from defaults import DefaultMaze, color_path
 from dtypes import Vector
-from eller import (
+from generators.eller import (
     convert_to_row,
     ellers_algorithm,
     reuse_disjoint_set,
@@ -13,7 +13,7 @@ from eller import (
 from styles import underline
 from traversal import djikstra
 from test_helpers import debug
-from union_find import DisjointSet
+from generators.union_find import DisjointSet
 
 
 class TestEller(BaseTest):

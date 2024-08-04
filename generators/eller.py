@@ -3,7 +3,7 @@ import random
 from collections import defaultdict
 
 from maze import MazeValue
-from union_find import DisjointSet
+from generators.union_find import DisjointSet
 from styles import underline
 from dtypes import Vector
 

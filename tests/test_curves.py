@@ -1,7 +1,7 @@
 from unittest import main
 
 from base_test import BaseTest
-from curves import hindex_to_2d
+from generators.curves import hindex_to_2d
 from test_helpers import ignore
 
 
