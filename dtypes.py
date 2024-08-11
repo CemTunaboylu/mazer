@@ -1,5 +1,6 @@
 from operator import add as add_op
 from operator import sub as sub_op
+from operator import mul as mul_op
 from operator import eq as eq_op
 
 from typing import Callable, NewType, Tuple, Union
@@ -24,6 +25,10 @@ def add(pos: Vector, other: Vector) -> Vector:  # Generator[int, None, None]:
 
 def sub(pos: Vector, other: Vector) -> Vector:  # Generator[int, None, None]:
     return __operate_on(sub_op, pos, other)
+
+
+def mul(pos: Vector, other: Vector) -> Vector:  # Generator[int, None, None]:
+    return __operate_on(mul_op, pos, other)
 
 
 def eq(pos: Vector, other: Vector) -> bool:

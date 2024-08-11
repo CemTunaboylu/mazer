@@ -175,7 +175,7 @@ class Maze:
         lengths_of_axis: Vector,
         wall_value: MazeValue,
         dimensionality: int = 2,
-    ):
+    ) -> "Maze":
         if len(lengths_of_axis) == 1:
             lengths_of_axis = lengths_of_axis * dimensionality  # square
 
