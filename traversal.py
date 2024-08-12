@@ -22,24 +22,18 @@ def djikstra(
     distances[start] = (0, start)
 
     dims = maze.dim()
-
-    # do not count the walls, implies walls are not breakable
-    # TODO: if there are less than shortest manhattan distance or whatever the distance calc. method is
-    # given, we can stop immediately without traversing the maze
-    num_of_walkable_nodes = maze.num_walkable_nodes()
+    path = None
 
     pri_que = makefheap()
     fheappush(pri_que, (0, start))
 
-    path = None
     if debug_mode:
         print(f"distances: {distances}")
         print(f"dims: {dims}")
-        print(f"num_of_walkable_nodes: {num_of_walkable_nodes}")
         print(f"priority queue: {pri_que}")
 
     # visited checks -> fib heap will be changing prios thus will always have at most num_nodes
-    # node in it, thus emptying it corresponds to the visiting all walkable nodes
+    # node in it, emptying it corresponds to the visiting all walkable nodes
     # additionally, unless we come up with a better path to a node - with less cost -, we don't put it
     # in the fib heap thus it acts as a visited check
     while pri_que.num_nodes:
@@ -47,8 +41,8 @@ def djikstra(
         if target is not None and current == target:
             path = reconstruct_path_between(start, target, distances)
             break
-        for n in maze.default_neighbor_shifts_for(len(maze.dims)):
-            neighbor_cell = add(current, n)
+        for n in maze.default_neighbor_shifts_for():
+            neighbor_cell = add(current, n.get_vec())
             if not maze.is_in(neighbor_cell) or not maze.can_play_from(
                 current, neighbor_cell, n
             ):

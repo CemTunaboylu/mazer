@@ -1,14 +1,12 @@
 from unittest import main
 
 from base_test import BaseTest
-from defaults import DefaultMaze, color_path
-from dtypes import Vector
+from defaults import color_path, DefaultMazeValue, show_bits
+from dtypes import Vector, sub
 from generators.eller import (
     convert_to_row,
     ellers_algorithm,
     reuse_disjoint_set,
-    pretty_print,
-    EllerMazeValue,
 )
 from styles import underline
 from traversal import djikstra
@@ -28,8 +26,8 @@ class TestEller(BaseTest):
         L = len(p)
         d = DisjointSet(L, parents=p, ranks=r)
         r = convert_to_row(d, v)
-        r = "".join([v.value for v in r])
-        exp = "|  ___|  _|    _|"
+        r = "-".join([show_bits(v.value) for v in r])
+        exp = "0101-0011-0010-0101-0010-0101-0111-0010"
         self.assertEqual(exp, r, f"{exp}!={r}")
 
     def test_reuse_disjoint_set(self):
@@ -44,42 +42,17 @@ class TestEller(BaseTest):
 
     def test_eller_is_fully_connected(self):
         test_cases = [(3, 7), (15, 15), (28, 28)]
-        play = EllerMazeValue.get_playable()[0]
         for dims in test_cases:
-            rows = ellers_algorithm(dims)
-            self.log(pretty_print(rows))
+            maze = ellers_algorithm(dims)
 
-            maze = DefaultMaze(rows, maze_value_class=EllerMazeValue)
-            start_row = rows[1].index(EllerMazeValue.FULL_PATH)
-            target_row = (
-                len(rows[-1])
-                - list(reversed(rows[-1])).index(EllerMazeValue.HORIZONTAL_PATH)
-                - 1
-            )
-
-            target = (len(rows) - 1, target_row)
             path = djikstra(
                 maze,
-                Vector((0, start_row)),
-                Vector(target),
+                Vector((0, 0)),
+                Vector(sub(dims, (1, 1))),
             )
-            replacements = {
-                " ": EllerMazeValue.FILLER.value,
-                "_": underline(EllerMazeValue.FILLER.value),
-            }
-
-            def replace(v: EllerMazeValue):
-                v = v.value
-                if v in replacements:
-                    v = replacements[v]
-                return v
-
-            for i, r in enumerate(rows):
-                rows[i] = [replace(dmv) for dmv in r]
-            self.log(f"{EllerMazeValue.HORIZONTAL_PATH.value * len(maze.space[0])}")
-            self.log(color_path(maze, path))
             self.logged_assert(self, self.assertIsNotNone, (path,))
-            self.logged_assert(self, self.assertTrue, (len(path) > 0,))
+            self.log(f"{'_'* len(maze.space[0])}")
+            self.log(color_path(maze, path))
             self.debug()
 
 

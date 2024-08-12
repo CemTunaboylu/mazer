@@ -1,6 +1,6 @@
 from abc import ABCMeta, abstractmethod
 from enum import Enum
-from typing import Dict, Generator, List
+from typing import Dict, Generator, List, Union
 
 from dtypes import *
 
@@ -15,13 +15,11 @@ from dtypes import *
 
 
 class MazeValue(Enum):
-    __metaclass__ = ABCMeta
-
     # TODO: make this n-dimensional
     def can_play_to(
         self,
         other: "MazeValue",
-        dir: Vector,
+        dir: Direction,
         *rules_to_pass: Callable[["MazeValue", "MazeValue"], bool],
     ) -> bool:
         unplayables = set(self.get_unplayable())
@@ -39,6 +37,14 @@ class MazeValue(Enum):
     @staticmethod
     @abstractmethod
     def get_unplayable() -> Tuple:
+        pass
+
+    @abstractmethod
+    def move(self, dir: Union[Direction, int]) -> "MazeValue":
+        pass
+
+    @abstractmethod
+    def is_visited(self) -> bool:
         pass
 
 
@@ -111,49 +117,24 @@ class Maze:
         self.num_nodes = self.__reduce(lambda acc, iterable: acc * len(iterable), 1)
         return self.num_nodes
 
-    def num_walkable_nodes(self) -> int:
-        space = self.space
-        stack = [space]
-        num = 0
-        while stack and isinstance(space, list):
-            if isinstance(space[0], list):
-                stack.extend([s for s in space])
-            elif isinstance(space[0], str):
-                num += sum(space[0].count(p.value) for p in self.playable)
-            else:
-                num += sum(space.count(p) for p in self.playable)
-            space = stack.pop()
-
-        return num
-
     def is_in(self, coordinate: Vector) -> bool:
         return all(0 <= coor_p < dim for (coor_p, dim) in zip(coordinate, self.dims))
 
     def is_playable(self, coordinate: Vector) -> bool:
         return self.get_value(coordinate) in self.playable
 
-    def can_play_from(self, frm: Vector, to: Vector, dir: Vector) -> bool:
+    def can_play_from(self, frm: Vector, to: Vector, dir: Direction) -> bool:
         f, t = self.get_value(frm), self.get_value(to)
         return f.can_play_to(t, dir)
 
     @staticmethod
     def default_neighbor_shifts_for(
-        dim: int,
-        can_move_diagonally: bool = False,
-        dirs: List[int] = [-1, 1],  # possible directions for each dimension
-    ) -> Generator[Vector, None, None]:
+        dirs=Direction,
+    ) -> Generator[Direction, None, None]:
+        for d in dirs:
+            yield d
 
-        # TODO: implement this
-        if can_move_diagonally:
-            pass
-
-        # orthogonal movement only
-        for d in range(dim):
-            for i in dirs:
-                n = [0] * dim
-                n[d] = i
-                yield Vector(n)
-
+    # TODO: move this to curves
     # TODO: assumes that curr and prev positions only differ in 1 dimension
     # and connects the path between them
     # TODO: make this more generic to n-dimensional path connect with a vector
@@ -175,7 +156,7 @@ class Maze:
         lengths_of_axis: Vector,
         wall_value: MazeValue,
         dimensionality: int = 2,
-    ) -> "Maze":
+    ):
         if len(lengths_of_axis) == 1:
             lengths_of_axis = lengths_of_axis * dimensionality  # square
 

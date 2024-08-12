@@ -3,8 +3,8 @@ from typing import List, Tuple
 
 from styles import color_values_of
 from defaults import DefaultMaze, DefaultMazeValue
-from dtypes import Vector
-from gray import gray_code_of
+from display import visual, FILLER, WALL
+from dtypes import Vector, vec_to_dir
 from maze import *
 
 
@@ -40,6 +40,33 @@ def hindex_to_2d(hindex: int, N: int) -> Tuple[int, int]:
     return (x, y)
 
 
+def hilbert_space(dims: Vector, playable=FILLER):
+    assert 1 == len(set(dims))  # for now ensure that it is nxn
+    prev, curr = ([0, 0]), None
+    points = []
+
+    space = Maze.create_no_path_space(dims, DefaultMazeValue.get_unplayable()[0])
+    maze = DefaultMaze(space)
+
+    N = dims[0] * dims[1]
+
+    for i in range(N):
+        # TODO: dims[0] is not correct here
+        (c, r) = hindex_to_2d(i, dims[0])
+        points.append((r, c))
+
+        curr = [r, c]
+        diff = sub(curr, prev)
+        dir = vec_to_dir(diff)
+        if dir:
+            space[r][c] = space[r][c].move(dir)
+            space[prev[0]][prev[1]] = space[prev[0]][prev[1]].move(dir.compliment())
+        # maze.set_path(curr, prev, playable)
+        prev = curr
+
+    return maze, points
+
+
 if __name__ == "__main__":
     N: int = 0
     debug = False
@@ -51,28 +78,11 @@ if __name__ == "__main__":
     if not N:
         N = int(input("maze dimensions: "))
 
-    prev, curr = ([0, 0]), None
-    points = []
-
-    maze_dim = N * 2 - 1
-
-    space = Maze.create_no_path_space([maze_dim], DefaultMazeValue.WALL)
-    maze = DefaultMaze(space)
-
-    playable = DefaultMazeValue.FILLER
-
-    for i in range(N * N):
-        (c, r) = hindex_to_2d(i, N)
-        points.append((r, c))
-        # stretch the maze
-        r, c = r * 2, c * 2
-        space[r][c] = playable
-        curr = [r, c]
-        maze.set_path(curr, prev, playable)
-        prev = curr
-
-    space.reverse()
-
+    # for i in range(N * N):
+    #     (c, r) = hindex_to_2d(i, N)
+    playable = FILLER
+    maze, points = hilbert_space(Vector((N, N)), playable)
+    maze.space.reverse()
     if debug:
         print([(c, i) for i, c in enumerate(points)])
 
