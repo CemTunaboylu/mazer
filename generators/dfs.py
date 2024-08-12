@@ -205,61 +205,8 @@ def show_bits(v):
     return bin(v)[2:].zfill(4)
 
 
-import pygame
-from pygame.locals import *
-from dtypes import mul
-
-
-def draw(self, coors, sc, tile, debug=False, path=None):
-    x, y = mul(coors, tuple([tile] * len(coors)))
-    draw_params = [
-        # TOOD: make them lambdas
-        ((x + tile, y), (x + tile, y + tile)),  # right wall
-        ((x, y + tile), (x, y)),  # left wall
-        ((x + tile, y + tile), (x, y + tile)),  # bottomwall
-        ((x, y), (x + tile, y)),  # top wall
-    ]
-    v = self.value
-    if debug and path and coors in path:
-        number_font = pygame.font.SysFont(None, 16)  # Default font, Size 16
-        number_image = number_font.render("X", True, pygame.color.Color(0, 0, 255))
-        sc.blit(number_image, (x + 5, y + 5))
-    for c in range(0, 4):  # 1 means there is passage
-        val_at_bit = 1 << c
-        i = v & val_at_bit
-        if i:  # if there is passage, do not draw a wall
-            continue
-        pygame.draw.line(
-            sc,
-            pygame.Color("darkgreen"),
-            *draw_params[c],
-        )
-
-
-def create_screen(maze_size: Tuple[int, int], tile_size=30):
-    pygame.init()
-    pygame.font.init()
-    w_size = mul(maze_size, tuple([tile_size] * len(maze_size)))
-    screen = pygame.display.set_mode(w_size)
-    # screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-    screen.fill((255, 255, 255))
-    return screen
-
-
-def draw_space(space, screen, tile_size=30, debug=False, path=None):
-    [
-        draw(v, (x, y), screen, tile_size, debug=debug, path=path)
-        for (y, r) in enumerate(space)
-        for (x, v) in enumerate(r)
-    ]
-
-
-def save(screen, filename: str = "test"):
-    pygame.display.update()
-    pygame.image.save(screen, f"{filename}.jpg")
-
-
 if __name__ == "__main__":
+    from display import *
 
     def test():
         d = 20
